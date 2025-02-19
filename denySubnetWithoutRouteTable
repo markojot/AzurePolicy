@@ -1,48 +1,68 @@
 {
-  "mode": "All",
-  "policyRule": {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.Network/virtualNetworks/subnets"
-        },
-        {
-          "field": "name",
-          "like": "snet-*"
-        },
-        {
-          "not": {
-            "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-            "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-uat-', resourceGroup().location)]"
-          }
-        }
-      ]
+  "name": "AppendRouteTableToSubnetBasedOnNaming",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "displayName": "Append Route Table to Subnets Based on Naming Convention",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy automatically appends the correct route table to subnets that match the naming convention. It extracts the function and designation from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the expected route table resource ID. If the subnet does not have the expected route table attached, the policy appends it. Route table must exist before subnet gets created.",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Network"
     },
-    "then": {
-      "effect": "[parameters('effect')]",
-      "details": [
-        {
-          "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-          "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-uat-', resourceGroup().location)]"
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "defaultValue": "Append",
+        "allowedValues": [
+          "Append",
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "metadata": {
+          "displayName": "Effect",
+          "description": "The effect to enforce (Append, Deny, Audit, or Disabled)."
         }
-      ]
-    }
-  },
-  "parameters": {
-    "effect": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Effect",
-        "description": "The effect to enforce (Append, Deny, Audit, or Disabled)."
       },
-      "allowedValues": [
-        "Append",
-        "Deny",
-        "Audit",
-        "Disabled"
-      ],
-      "defaultValue": "Append"
+      "environment": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Environment",
+          "description": "The environment part of the naming convention (e.g., uat)."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks/subnets"
+          },
+          {
+            "field": "name",
+            "like": "snet-*"
+          },
+          {
+            "not": {
+              "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
+              "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-', parameters('environment'), '-', resourceGroup().location)]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": [
+          {
+            "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
+            "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-', parameters('environment'), '-', resourceGroup().location)]"
+          }
+        ]
+      }
     }
   }
 }

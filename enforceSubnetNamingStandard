@@ -1,58 +1,72 @@
 {
-    "mode": "All",
-    "policyRule": {
-      "if": {
-        "allOf": [
-          {
-            "field": "type",
-            "equals": "Microsoft.Network/virtualNetworks/subnets"
-          },
-          {
-            "not": {
-              "field": "name",
-              "like": "[concat('snet-*-', parameters('designation'), '-', parameters('environment'), '-', parameters('region'))]"
-            }
+    "name": "EnforceSubnetNamingConvention",
+    "type": "Microsoft.Authorization/policyDefinitions",
+    "apiVersion": "2021-06-01",
+    "scope": null,
+    "properties": {
+      "displayName": "Enforce Subnet Naming Convention",
+      "policyType": "Custom",
+      "mode": "All",
+      "description": "This policy denies the creation of subnets that do not follow the naming convention: snet-*-<designation>-<environment>-<region>.",
+      "metadata": {
+        "version": "1.0.0",
+        "category": "NamingStandard"
+      },
+      "parameters": {
+        "effect": {
+          "type": "String",
+          "defaultValue": "Deny",
+          "allowedValues": [
+            "Deny",
+            "Audit",
+            "Disabled"
+          ],
+          "metadata": {
+            "displayName": "Effect",
+            "description": "Deny creation if naming convention is not met."
           }
-        ]
-      },
-      "then": {
-        "effect": "[parameters('effect')]"
-      }
-    },
-    "parameters": {
-      "effect": {
-        "type": "String",
-        "metadata": {
-          "displayName": "Effect",
-          "description": "Deny creation if naming convention is not met."
         },
-        "allowedValues": [
-          "Deny",
-          "Audit",
-          "Disabled"
-        ],
-        "defaultValue": "Deny"
-      },
-      "environment": {
-        "type": "String",
-        "metadata": {
-          "displayName": "Environment",
-          "description": "The environment part of the naming convention (e.g., uat)."
+        "environment": {
+          "type": "String",
+          "metadata": {
+            "displayName": "Environment",
+            "description": "The environment part of the naming convention (e.g., uat)."
+          }
+        },
+        "region": {
+          "type": "String",
+          "metadata": {
+            "displayName": "Region",
+            "description": "The region part of the naming convention (e.g., westus)."
+          }
+        },
+        "designation": {
+          "type": "String",
+          "metadata": {
+            "displayName": "Designation",
+            "description": "The designation part of the naming convention (e.g., spoke for spoke VNets or platform for hub VNets)."
+          }
         }
       },
-      "region": {
-        "type": "String",
-        "metadata": {
-          "displayName": "Region",
-          "description": "The region part of the naming convention (e.g., westus)."
-        }
-      },
-      "designation": {
-        "type": "String",
-        "metadata": {
-          "displayName": "Designation",
-          "description": "The designation part of the naming convention (e.g., spoke for spoke vnets or platform for hub vnets)."
+      "policyRule": {
+        "if": {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Network/virtualNetworks/subnets"
+            },
+            {
+              "not": {
+                "field": "name",
+                "like": "[concat('snet-*-', parameters('designation'), '-', parameters('environment'), '-', parameters('region'))]"
+              }
+            }
+          ]
+        },
+        "then": {
+          "effect": "[parameters('effect')]"
         }
       }
     }
-  }  
+  }
+  
