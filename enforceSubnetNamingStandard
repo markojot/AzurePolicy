@@ -1,37 +1,58 @@
 {
-  "mode": "All",
-  "policyRule": {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.Network/virtualNetworks/subnets"
-        },
-        {
-          "not": {
-            "field": "name",
-            "like": "snet-*-<env>-<location>"
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks/subnets"
+          },
+          {
+            "not": {
+              "field": "name",
+              "like": "[concat('snet-*-', parameters('designation'), '-', parameters('environment'), '-', parameters('region'))]"
+            }
           }
-        }
-      ]
-    },
-    "then": {
-      "effect": "[parameters('effect')]"
-    }
-  },
-  "parameters": {
-    "effect": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Effect",
-        "description": "Deny creation if naming convention is not met."
+        ]
       },
-      "allowedValues": [
-        "Deny",
-        "Audit",
-        "Disabled"
-      ],
-      "defaultValue": "Deny"
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Deny creation if naming convention is not met."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "environment": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Environment",
+          "description": "The environment part of the naming convention (e.g., uat)."
+        }
+      },
+      "region": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Region",
+          "description": "The region part of the naming convention (e.g., westus)."
+        }
+      },
+      "designation": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Designation",
+          "description": "The designation part of the naming convention (e.g., spoke for spoke vnets or platform for hub vnets)."
+        }
+      }
     }
-  }
-}
+  }  
