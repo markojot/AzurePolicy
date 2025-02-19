@@ -1,0 +1,48 @@
+{
+  "mode": "All",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "equals": "Microsoft.Network/virtualNetworks/subnets"
+        },
+        {
+          "field": "name",
+          "like": "snet-*"
+        },
+        {
+          "not": {
+            "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
+            "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-uat-', resourceGroup().location)]"
+          }
+        }
+      ]
+    },
+    "then": {
+      "effect": "[parameters('effect')]",
+      "details": [
+        {
+          "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
+          "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-', split(field('name'),'-')[1], '-', split(field('name'),'-')[2], '-uat-', resourceGroup().location)]"
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "effect": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Effect",
+        "description": "The effect to enforce (Append, Deny, Audit, or Disabled)."
+      },
+      "allowedValues": [
+        "Append",
+        "Deny",
+        "Audit",
+        "Disabled"
+      ],
+      "defaultValue": "Append"
+    }
+  }
+}
