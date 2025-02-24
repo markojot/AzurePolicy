@@ -1,0 +1,72 @@
+{
+  "name": "EnforceSubnetNamingConvention",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "displayName": "Enforce Subnet Naming Convention",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy denies the creation of subnets that do not follow the naming convention: snet-<function>-<designation>-<environment>-<region>. The environment and region must match the assigned parameters.",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "NamingStandard"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "defaultValue": "Deny",
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Deny creation if naming convention is not met."
+        }
+      },
+      "environment": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Environment",
+          "description": "The environment part of the naming convention (e.g., uat)."
+        }
+      },
+      "region": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Region",
+          "description": "The region part of the naming convention (e.g., westus)."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "not": {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Network/virtualNetworks/subnets"
+            },
+            {
+              "field": "name",
+              "like": "snet-*"
+            },
+            {
+              "value": "[split(field('name'),'-')[3]]",
+              "equals": "[parameters('environment')]"
+            },
+            {
+              "value": "[split(field('name'),'-')[4]]",
+              "equals": "[parameters('region')]"
+            }
+          ]
+        }
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}
