@@ -1,13 +1,13 @@
 {
-  "name": "AppendRouteTableToSubnetBasedOnNaming",
+  "name": "AppendDefaultRouteTableIfMissing",
   "type": "Microsoft.Authorization/policyDefinitions",
   "apiVersion": "2021-06-01",
   "scope": null,
   "properties": {
-    "displayName": "Append Route Table to Subnets Based on Naming Convention",
+    "displayName": "Append Default Route Table to Subnets if None is Attached",
     "policyType": "Custom",
     "mode": "All",
-    "description": "This policy automatically appends the correct route table to subnets that match the naming convention. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the expected route table resource ID. If the subnet does not have the expected route table attached, the policy appends it. Route table must exist before subnet gets created.",
+    "description": "This policy automatically appends the default route table to subnets if no route table is attached. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the default route table resource ID. If any route table is already attached, the policy does nothing.",
     "metadata": {
       "version": "1.0.0",
       "category": "Network"
@@ -36,14 +36,8 @@
             "equals": "Microsoft.Network/virtualNetworks/subnets"
           },
           {
-            "field": "name",
-            "like": "snet-*"
-          },
-          {
-            "not": {
-              "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-              "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', split(field('name'),'-')[3], '-', resourceGroup().location)]"
-            }
+            "exists": "false",
+            "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id"
           }
         ]
       },
