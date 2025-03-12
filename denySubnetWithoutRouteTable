@@ -6,7 +6,7 @@
     "displayName": "Modify RT to Subnets if None is Attached",
     "policyType": "Custom",
     "mode": "All",
-    "description": "This policy automatically modifies subnets by appending the default route table if no route table is attached. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and builds the default route table resource ID. If a route table is already attached, the policy does nothing.",
+    "description": "This policy automatically modifies subnets by appending the default route table if no route table is attached. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and builds the default route table resource ID. If a route table is already attached, the policy does nothing. Note: The remediation identity must be assigned the role defined by the roleDefinition parameter.",
     "metadata": {
       "version": "1.0.0",
       "category": "Network"
@@ -14,7 +14,7 @@
     "parameters": {
       "effect": {
         "type": "String",
-        "defaultValue": "Audit",
+        "defaultValue": "Modify",
         "allowedValues": [
           "Modify",
           "Deny",
@@ -23,7 +23,15 @@
         ],
         "metadata": {
           "displayName": "Effect",
-          "description": "The effect to enforce (Modify, Deny, Audit, or Disabled). For remediation tasks, override to Modify as needed."
+          "description": "The effect to enforce (Modify, Deny, Audit, or Disabled)."
+        }
+      },
+      "roleDefinition": {
+        "type": "String",
+        "defaultValue": "4d97b98b-1d4f-4787-a291-c67834d212e7",
+        "metadata": {
+          "displayName": "Role Definition ID",
+          "description": "The role definition ID required for remediation. This is set to the Network Contributor role."
         }
       }
     },
@@ -43,6 +51,9 @@
       "then": {
         "effect": "[parameters('effect')]",
         "details": {
+          "roleDefinitionIds": [
+            "[parameters('roleDefinition')]"
+          ],
           "operations": [
             {
               "operation": "addOrReplace",
