@@ -7,7 +7,7 @@
     "displayName": "Append Route Table to Subnets Based on Naming Convention",
     "policyType": "Custom",
     "mode": "All",
-    "description": "This policy automatically appends the correct route table to subnets that match the naming convention. It extracts the designation from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the expected route table resource ID. If the subnet does not have the expected route table attached, the policy appends it. Route table must exist before subnet gets created.",
+    "description": "This policy automatically appends the correct route table to subnets that match the naming convention. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the expected route table resource ID. If the subnet does not have the expected route table attached, the policy appends it. Route table must exist before subnet gets created.",
     "metadata": {
       "version": "1.0.0",
       "category": "Network"
@@ -26,13 +26,6 @@
           "displayName": "Effect",
           "description": "The effect to enforce (Append, Deny, Audit, or Disabled)."
         }
-      },
-      "environment": {
-        "type": "String",
-        "metadata": {
-          "displayName": "Environment",
-          "description": "The environment part of the naming convention (e.g., uat)."
-        }
       }
     },
     "policyRule": {
@@ -49,7 +42,7 @@
           {
             "not": {
               "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-              "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', parameters('environment'), '-', resourceGroup().location)]"
+              "equals": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', split(field('name'),'-')[3], '-', resourceGroup().location)]"
             }
           }
         ]
@@ -59,7 +52,7 @@
         "details": [
           {
             "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-            "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', parameters('environment'), '-', resourceGroup().location)]"
+            "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', split(field('name'),'-')[3], '-', resourceGroup().location)]"
           }
         ]
       }
