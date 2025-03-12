@@ -1,13 +1,12 @@
 {
-  "name": "AppendDefaultRouteTableIfMissing",
+  "name": "Append_RT_To_Subnets",
   "type": "Microsoft.Authorization/policyDefinitions",
   "apiVersion": "2021-06-01",
-  "scope": null,
   "properties": {
-    "displayName": "Append Default Route Table to Subnets if None is Attached",
+    "displayName": "Modify RT to Subnets if None is Attached",
     "policyType": "Custom",
     "mode": "All",
-    "description": "This policy automatically appends the default route table to subnets if no route table is attached. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and then builds the default route table resource ID. If any route table is already attached, the policy does nothing.",
+    "description": "This policy automatically modifies subnets by appending the default route table if no route table is attached. It extracts the designation and environment from the subnet name (assumed to be in the format snet-<function>-<designation>-<environment>-<region>) and builds the default route table resource ID. If a route table is already attached, the policy does nothing.",
     "metadata": {
       "version": "1.0.0",
       "category": "Network"
@@ -15,16 +14,16 @@
     "parameters": {
       "effect": {
         "type": "String",
-        "defaultValue": "Append",
+        "defaultValue": "Audit",
         "allowedValues": [
-          "Append",
+          "Modify",
           "Deny",
           "Audit",
           "Disabled"
         ],
         "metadata": {
           "displayName": "Effect",
-          "description": "The effect to enforce (Append, Deny, Audit, or Disabled)."
+          "description": "The effect to enforce (Modify, Deny, Audit, or Disabled). For remediation tasks, override to Modify as needed."
         }
       }
     },
@@ -43,12 +42,15 @@
       },
       "then": {
         "effect": "[parameters('effect')]",
-        "details": [
-          {
-            "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
-            "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', split(field('name'),'-')[3], '-', resourceGroup().location)]"
-          }
-        ]
+        "details": {
+          "operations": [
+            {
+              "operation": "addOrReplace",
+              "field": "Microsoft.Network/virtualNetworks/subnets/routeTable.id",
+              "value": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/routeTables/rt-default-', split(field('name'),'-')[2], '-', split(field('name'),'-')[3], '-', resourceGroup().location)]"
+            }
+          ]
+        }
       }
     }
   }
